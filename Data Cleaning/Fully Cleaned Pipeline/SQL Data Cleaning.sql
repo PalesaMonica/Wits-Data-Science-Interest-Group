@@ -38,12 +38,28 @@ INNER JOIN Performance AS perf
 --view first 5 entries of our data
 SELECT * FROM att_perf_joined LIMIT 5;
 
+SELECT COUNT(*) FROM att_perf_joined AS row_count;
+
+SELECT COUNT(*) FROM information_schema.columns
+     WHERE table_name = 'att_perf_joined';
+
 ---count rows and columns
+--subquery
 SELECT
     (SELECT COUNT(*) FROM att_perf_joined) AS row_count,
     (SELECT COUNT(*) FROM information_schema.columns
      WHERE table_name = 'att_perf_joined') AS col_count;
 
+--cte
+WITH table_shape AS (
+    SELECT
+    (SELECT COUNT(*) FROM att_perf_joined) AS row_count,
+    (SELECT COUNT(*) FROM information_schema.columns
+     WHERE table_name = 'att_perf_joined') AS col_count
+    )
+SELECT row_count,col_count
+FROM  table_shape
+;
 ---data cleaning
 SELECT
     Homework_Completion_Percentage,
@@ -187,13 +203,23 @@ SELECT
     (SUM((Homework_Completion_Percentage-stats.mean_hwp)^4)/(stats.total*stats.std_hmp^4))-3 AS kurt_homework_per
 FROM  att_perf_joined,stats
 GROUP BY stats.total,stats.std_exam_score,stats.std_hmp;
-
-
-
-
-
-
-
-
-
 DROP TABLE IF EXISTS att_perf_joined;
+
+
+
+---What is each student mark compared to the overall class average?
+SELECT
+    Exam_Score,
+    AVG(Exam_Score) OVER() AS average_exam_score
+FROM  att_perf_joined;
+
+SELECT
+    Homework_Completion_Percentage,
+    Second_Subject,
+    AVG(Homework_Completion_Percentage) OVER(PARTITION BY Second_Subject) AS  avg_score
+FROM att_perf_joined;
+
+SELECT COUNT(*) AS count,
+       Second_Subject
+FROM att_perf_joined
+GROUP BY Second_Subject;

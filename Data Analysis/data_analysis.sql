@@ -9,8 +9,8 @@ FROM
 WHERE
     table_name = 'student_performance';
 
----viewing the first 50 rows/entries
-SELECT * FROM student_performance LIMIT 50;
+---viewing the first 10 rows/entries
+SELECT * FROM student_performance LIMIT 10;
 
 -- columns
 SELECT column_name
@@ -85,3 +85,29 @@ FROM (
 duplicates;
 
 --Handling missing values
+SELECT Parental_Education_Level, COUNT(*) AS count
+FROM student_performance
+GROUP BY Parental_Education_Level;
+
+UPDATE  student_performance
+SET Parental_Education_Level=(
+    SELECT Parental_Education_Level
+    FROM student_performance
+    WHERE Parental_Education_Level IS NOT NULL
+    GROUP BY Parental_Education_Level
+    ORDER BY COUNT(*) DESC
+    LIMIT 1
+    )
+WHERE Parental_Education_Level IS NULL;
+
+SELECT Teacher_Quality, COUNT(*) AS count
+FROM student_performance
+GROUP BY Teacher_Quality;
+
+
+SELECT Teacher_Quality,School_Type,COUNT(*) AS count
+FROM student_performance
+GROUP BY School_Type,Teacher_Quality;
+
+DELETE FROM student_performance
+WHERE Teacher_Quality IS NULL;
